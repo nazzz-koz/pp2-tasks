@@ -38,4 +38,13 @@ print(txt2)
 ex = "We are the so-called \"Students\" from the south." #Escape characters: \", \', \n, \r, \t, \b, \ooo, \hxx
 print(ex)
 
-
+#String methods
+a = "zoRo"
+print(a.capitalize())
+print(a.casefold())
+print(a.center(40))
+print(a.count("o"))
+print(a.encode())
+print(a.endswith('a'))
+print(a.expandtabs(2)) #works with \t
+print(a.find('R'))
