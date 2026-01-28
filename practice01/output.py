@@ -1,11 +1,13 @@
-print("I am learning Python.") #text must be surrounded by quotes either double or single
-print("Hello World!", end=" ") #end is used to separate text with a space
+#1
+print("I am learning Python.")
+#2
+print("Hello KBTU!", end=" ") 
 print("I will print on the same line.")
-
-print(358) #dont need quotes
-
-print(3 + 3) #can perform operations
-print(2 * 5)
-
-#Combination of both
-print("I am", 35, "years old.") 
+#3
+print(358) 
+#4
+print(8 + 22) 
+#5
+print(28 * 5)
+#6
+print("I am", 17, "years old.") 
