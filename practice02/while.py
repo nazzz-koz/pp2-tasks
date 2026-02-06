@@ -33,6 +33,6 @@ a = 3
 b = 7
 while True:
     if (a+b) == 9:
-        print("a+b = 10")
+        print("a+b = 9")
     else:
         break

@@ -52,12 +52,16 @@ thisdict = {
 }
 thisdict.pop("model")
 thisdict.popitem()
-del thisdict["model"]
 thisdict.clear()
 print(thisdict)
 del thisdict
 
 #7
+thisdict = {
+  "brand": "Ford",
+  "model": "Mustang",
+  "year": 1964
+}
 for x in thisdict:
   print(x)
   print(thisdict[x])
