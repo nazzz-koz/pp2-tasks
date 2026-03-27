@@ -1,0 +1,185 @@
+import psycopg2
+import csv
+from config import DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
+
+connection = psycopg2.connect(
+    host=DB_HOST,
+    database=DB_NAME,
+    user=DB_USER,
+    password=DB_PASSWORD
+)
+
+def create_contacts_table():
+    sql = """
+    CREATE TABLE IF NOT EXISTS contacts (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        phone VARCHAR(20) NOT NULL UNIQUE
+    )
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(sql)
+        connection.commit()
+
+
+def insert_contacts_from_csv(file_path):
+    sql = "INSERT INTO contacts(name, phone) VALUES(%s, %s) ON CONFLICT (phone) DO NOTHING"
+    with connection.cursor() as cursor:
+        with open(file_path, newline="") as csvfile:
+            reader = csv.reader(csvfile)
+            next(reader)  
+            for row in reader:
+                name, phone = row
+                cursor.execute(sql, (name, phone))
+        connection.commit()
+
+
+def add_contact(name, phone):
+    sql = "INSERT INTO contacts(name, phone) VALUES(%s, %s) ON CONFLICT (phone) DO NOTHING"
+    with connection.cursor() as cursor:
+        cursor.execute(sql, (name, phone))
+        connection.commit()
+
+
+def add_contact_from_console():
+    name = input("Enter name: ")
+    phone = input("Enter phone: ")
+    add_contact(name, phone)
+    print(f"Added contact: {name} - {phone}")
+
+
+def update_contact_phone(name, new_phone):
+    sql = "UPDATE contacts SET phone = %s WHERE name = %s"
+    with connection.cursor() as cursor:
+        cursor.execute(sql, (new_phone, name))
+        connection.commit()
+        return cursor.rowcount
+
+
+def update_contact_name(phone, new_name):
+    sql = "UPDATE contacts SET name = %s WHERE phone = %s"
+    with connection.cursor() as cursor:
+        cursor.execute(sql, (new_name, phone))
+        connection.commit()
+        return cursor.rowcount
+
+
+def update_contact_from_console():
+    choice = input("Update (1) Name or (2) Phone: ")
+
+    if choice == "1":
+        phone = input("Enter phone: ")
+        new_name = input("Enter new name: ")
+        updated_count = update_contact_name(phone, new_name)
+    elif choice == "2":
+        name = input("Enter name: ")
+        new_phone = input("Enter new phone: ")
+        updated_count = update_contact_phone(name, new_phone)
+    else:
+        print("Invalid choice.")
+        return
+
+    print(f"Updated {updated_count} contact(s).")
+
+
+def get_all_contacts():
+    sql = "SELECT * FROM contacts ORDER BY name"
+    with connection.cursor() as cursor:
+        cursor.execute(sql)
+        return cursor.fetchall()
+
+
+def search_contacts_by_pattern(pattern):
+    sql = "SELECT * FROM contacts WHERE name ILIKE %s OR phone ILIKE %s"
+    like_pattern = f"%{pattern}%"
+    with connection.cursor() as cursor:
+        cursor.execute(sql, (like_pattern, like_pattern))
+        return cursor.fetchall()
+
+
+def delete_contact_by_phone(phone):
+    sql = "DELETE FROM contacts WHERE phone = %s"
+    with connection.cursor() as cursor:
+        cursor.execute(sql, (phone,))
+        connection.commit()
+        return cursor.rowcount
+
+
+def delete_contact_by_name(name):
+    sql = "DELETE FROM contacts WHERE name = %s"
+    with connection.cursor() as cursor:
+        cursor.execute(sql, (name,))
+        connection.commit()
+        return cursor.rowcount
+
+
+def delete_contact_from_console():
+    phone = input("Enter phone to delete: ")
+    confirm = input(f"Are you sure you want to delete {phone}? (y/n): ")
+    if confirm.lower() == "y":
+        deleted_count = delete_contact_by_phone(phone)
+        print(f"Deleted {deleted_count} contact(s).")
+    else:
+        print("Deletion cancelled.")
+
+
+def display_contacts(contact_list):
+    if not contact_list:
+        print("  (no contacts)")
+        return
+    for contact in contact_list:
+        print(f"  [{contact[0]}] {contact[1]} - {contact[2]}")
+
+
+def main():
+    create_contacts_table()
+
+    while True:
+        print("\n--- PhoneBook ---")
+        print("1. Show all contacts")
+        print("2. Add contact (console)")
+        print("3. Import contacts from CSV")
+        print("4. Search contacts")
+        print("5. Update phone by name")
+        print("6. Update name by phone")
+        print("7. Delete contact by name")
+        print("8. Delete contact by phone")
+        print("0. Exit")
+
+        choice = input("\nChoice: ")
+
+        if choice == "1":
+            display_contacts(get_all_contacts())
+        elif choice == "2":
+            add_contact_from_console()
+        elif choice == "3":
+            file_path = input("Enter CSV file path: ")
+            insert_contacts_from_csv(file_path)
+        elif choice == "4":
+            pattern = input("Search pattern: ")
+            display_contacts(search_contacts_by_pattern(pattern))
+        elif choice == "5":
+            name = input("Enter name: ")
+            new_phone = input("Enter new phone: ")
+            update_contact_phone(name, new_phone)
+        elif choice == "6":
+            phone = input("Enter phone: ")
+            new_name = input("Enter new name: ")
+            update_contact_name(phone, new_name)
+        elif choice == "7":
+            name = input("Enter name: ")
+            deleted_count = delete_contact_by_name(name)
+            print(f"Deleted {deleted_count} contact(s).")
+        elif choice == "8":
+            delete_contact_from_console()
+        elif choice == "0":
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+    connection.close()
+    print("Thank you! Goodbye!")
+
+
+if __name__ == "__main__":
+    main()
