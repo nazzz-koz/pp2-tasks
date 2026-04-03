@@ -19,7 +19,7 @@ DECLARE
 BEGIN
     FOR i IN 1..array_length(names, 1)
     LOOP
-        IF phones[i] ~ '^[0-9]{10,15}$' THEN
+        IF phones[i] ~ '^\+[0-9]{10,15}$' THEN
             INSERT INTO contacts(name, phone)
             VALUES (names[i], phones[i])
             ON CONFLICT (phone)
